@@ -8,7 +8,17 @@ const ChatWidget = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { type: 'bot', text: 'Hello! How can I help you today?' }
+    { 
+      type: 'bot', 
+      text: 'Hello! How can I help you today?',
+      options: [
+        'Book A Demo',
+        'Services',
+        'Ask a Question',
+        'Pricing',
+        'Leads'
+      ]
+    }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -67,6 +77,37 @@ const ChatWidget = ({
     setIsRecording(!isRecording);
   };
 
+  const handleOptionClick = (option) => {
+    // Add user's selection as a message
+    setMessages(prev => [...prev, { type: 'user', text: option }]);
+    
+    // Simulate bot response
+    setTimeout(() => {
+      let response = '';
+      switch(option) {
+        case 'Book A Demo':
+          response = 'I can help you schedule a demo. Please let me know your preferred date and time.';
+          break;
+        case 'Services':
+          response = 'We offer a wide range of services including AI chatbots, automation, and custom solutions. Which area interests you?';
+          break;
+        case 'Ask a Question':
+          response = 'Feel free to ask any question! I\'m here to help.';
+          break;
+        case 'Pricing':
+          response = 'Our pricing plans are flexible and tailored to your needs. Would you like to see our pricing packages?';
+          break;
+        case 'Leads':
+          response = 'I can help you with lead generation and management. What specific information are you looking for?';
+          break;
+        default:
+          response = 'How can I assist you with that?';
+      }
+      setMessages(prev => [...prev, { type: 'bot', text: response }]);
+      scrollToBottom();
+    }, 1000);
+  };
+
   useEffect(() => {
     return () => {
       stopRecordingTimer();
@@ -87,26 +128,32 @@ const ChatWidget = ({
   };
 
   return (
-    <div className={positionClasses[position]}>
+    <div className={`chat-widget-container ${positionClasses[position]}`}>
       {/* Chat Icon Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
           w-16 h-16 rounded-full 
-          shadow-lg hover:shadow-xl 
+          shadow-lg hover:shadow-2xl 
           flex items-center justify-center 
           transition-all duration-300 
           hover:scale-110 hover:rotate-12
           bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500
           animate-pulse
+          group
+          relative
+          overflow-hidden
         `}
       >
+        {/* Shine effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shine" />
+        
         {logo ? (
-          <img src={logo} alt="Chat Logo" className="w-10 h-10" />
+          <img src={logo} alt="Chat Logo" className="w-10 h-10 group-hover:scale-110 transition-transform duration-300" />
         ) : (
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-10 w-10 text-white"
+            className="h-10 w-10 text-white group-hover:scale-110 transition-transform duration-300"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -123,20 +170,27 @@ const ChatWidget = ({
 
       {/* Chat Modal */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 animate-fade-in">
+        <div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 animate-fade-in border border-white/20">
           {/* Modal Header */}
-          <div className="p-4 flex items-center justify-between bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-            <div className="flex items-center space-x-3">
+          <div className="p-4 flex items-center justify-between bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative overflow-hidden">
+            {/* Animated background */}
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-400/20 via-purple-400/20 to-pink-400/20 animate-gradient-x" />
+            
+            <div className="flex items-center space-x-3 relative z-10">
               {logo && (
-                <img src={logo} alt="Chat Logo" className="w-10 h-10 rounded-full border-2 border-white" />
+                <img 
+                  src={logo} 
+                  alt="Chat Logo" 
+                  className="w-10 h-10 rounded-full border-2 border-white/30 hover:border-white/50 transition-all duration-300" 
+                />
               )}
-              <h3 className="text-xl font-semibold text-white">
+              <h3 className="text-xl font-semibold text-white drop-shadow-lg">
                 Chat with us
               </h3>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-white hover:text-gray-200 transition-colors duration-200"
+              className="text-white/80 hover:text-white transition-colors duration-200 relative z-10"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -156,30 +210,65 @@ const ChatWidget = ({
           </div>
 
           {/* Chat Messages Area */}
-          <div className="h-[calc(100%-120px)] p-4 overflow-y-auto bg-gradient-to-b from-gray-50 to-white chat-scrollbar">
+          <div className="h-[calc(100%-120px)] p-4 overflow-y-auto bg-gradient-to-b from-gray-50/50 to-white/50 chat-scrollbar backdrop-blur-sm">
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} mb-3 group`}
               >
                 {message.type === 'bot' && (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-400 to-purple-400 flex items-center justify-center mr-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center mr-2 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                     <span className="text-white font-semibold">AI</span>
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] p-3 rounded-2xl ${
+                  className={`max-w-[80%] px-4 py-2 relative group-hover:scale-[1.02] transition-all duration-300 ${
                     message.type === 'user'
-                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
-                      : 'bg-white shadow-sm'
+                      ? 'bg-gradient-to-br from-blue-500 to-cyan-500 text-white shadow-lg hover:shadow-xl rounded-t-3xl rounded-l-3xl rounded-br-md'
+                      : 'bg-gradient-to-br from-blue-50 to-gray-100 shadow-sm hover:shadow-md backdrop-blur-sm rounded-t-3xl rounded-r-3xl rounded-bl-md'
                   }`}
                 >
-                  <p className={message.type === 'user' ? 'text-white' : 'text-gray-700'}>
-                    {message.text}
-                  </p>
+                  <div className="relative z-10">
+                    <p className={`${
+                      message.type === 'user'
+                        ? 'text-white drop-shadow-sm'
+                        : 'text-gray-700'
+                    }`}>
+                      {message.text}
+                    </p>
+                    {message.options && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {message.options.map((option, optionIndex) => (
+                          <button
+                            key={optionIndex}
+                            onClick={() => handleOptionClick(option)}
+                            className="px-4 py-2 bg-white/90 cursor-pointer hover:bg-white text-gray-700 rounded-full text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 hover:border-gray-200"
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={`absolute inset-0 rounded-3xl overflow-hidden ${
+                    message.type === 'user' ? 'opacity-20' : 'opacity-10'
+                  }`}>
+                    <div className={`absolute inset-0 bg-gradient-to-r ${
+                      message.type === 'user'
+                        ? 'from-blue-400/30 via-cyan-400/30 to-blue-400/30'
+                        : 'from-gray-200/30 via-gray-100/30 to-gray-200/30'
+                    } animate-gradient-x`} />
+                  </div>
+
+                  <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+                    message.type === 'user'
+                      ? 'bg-gradient-to-br from-blue-400/20 to-cyan-400/20'
+                      : 'bg-gradient-to-br from-gray-100/20 to-white/20'
+                  }`} />
                 </div>
                 {message.type === 'user' && (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-purple-400 flex items-center justify-center ml-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center ml-2 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                     <span className="text-white font-semibold">U</span>
                   </div>
                 )}
@@ -189,7 +278,7 @@ const ChatWidget = ({
           </div>
 
           {/* Chat Input Area */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100">
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t border-white/20">
             <div className="flex space-x-2">
               <div className="flex-1 relative">
                 <input
@@ -198,14 +287,15 @@ const ChatWidget = ({
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Type your message..."
-                  className="w-full p-3 pr-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  className="w-full p-3 pr-12 rounded-xl border border-gray-200/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm placeholder-gray-400"
                 />
+                {/* Microphone Button with Recording Animation */}
                 <button
                   onClick={toggleRecording}
                   className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-full transition-all duration-200 ${
                     isRecording
-                      ? 'bg-red-500 text-white animate-pulse'
-                      : 'text-gray-500 hover:text-indigo-500'
+                      ? 'bg-pink-500 text-white animate-pulse shadow-lg'
+                      : 'text-gray-500 hover:text-indigo-500 hover:bg-indigo-100'
                   }`}
                 >
                   {isRecording ? (
@@ -237,8 +327,10 @@ const ChatWidget = ({
               </div>
               <button
                 onClick={handleSendMessage}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-400 text-white font-semibold hover:from-indigo-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl relative overflow-hidden group"
               >
+                {/* Button shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                 Send
               </button>
             </div>
